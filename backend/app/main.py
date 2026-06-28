@@ -1,11 +1,14 @@
 from fastapi import FastAPI
-from app.api.v1.api import api_router
 
-app = FastAPI(title="Quotation Management API", version="1.0.0")
+from app.db.database import engine, Base
 
-app.include_router(api_router)
+import app.models
+
+app = FastAPI(title="Quotation Management API")
+
+Base.metadata.create_all(bind=engine)
 
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to the Quotation Management API"}
+    return {"message": "API Running"}
