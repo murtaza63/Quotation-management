@@ -8,6 +8,12 @@ class CustomerService:
 
     @staticmethod
     def create_customer(db: Session, customer: CustomerCreate):
+
+        existing = CustomerRepository.get_by_company(db, customer.company_name)
+
+        if existing:
+            raise ValueError("Company already exists")
+
         return CustomerRepository.create(db, customer)
 
     @staticmethod
@@ -15,8 +21,8 @@ class CustomerService:
         return CustomerRepository.get_all(db)
 
     @staticmethod
-    def get_customer(db: Session, customer_id: int):
-        return CustomerRepository.get_by_id(db, customer_id)
+    def get_customers(db, skip, limit):
+        return CustomerRepository.get_all(db, skip, limit)
 
     @staticmethod
     def update_customer(db: Session, customer_id: int, customer: CustomerUpdate):
