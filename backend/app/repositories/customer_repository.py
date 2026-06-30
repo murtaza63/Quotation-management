@@ -1,3 +1,5 @@
+import email
+
 from sqlalchemy.orm import Session
 from app.models.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate
@@ -14,8 +16,8 @@ class CustomerRepository:
         return db_customer
 
     @staticmethod
-    def get_all(db: Session):
-        return db.query(Customer).all()
+    def get_all(db: Session, skip: int = 0, limit: int = 20):
+        return db.query(Customer).offset(skip).limit(limit).all()
 
     @staticmethod
     def get_by_id(db: Session, customer_id: int):
@@ -45,3 +47,11 @@ class CustomerRepository:
         db.delete(db_customer)
         db.commit()
         return True
+
+    @staticmethod
+    def search(db: Session, company_name: str):
+        return db.query(Customer).filter(Customer.name.ilike(f"%{company_name}%")).all()
+
+    @staticmethod
+    def get_by_company(db: Session, company_name: str):
+        return db.query(Customer).filter(Customer.company_name == company_name).first()

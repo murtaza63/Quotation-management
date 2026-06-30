@@ -4,18 +4,22 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
 from app.services.customer_service import CustomerService
+from app.repositories.customer_repository import CustomerRepository
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 
 @router.post("", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    return CustomerService.create_customer(db, customer)
+    try:
+        return CustomerService.create_customer(db, customer)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("", response_model=list[CustomerResponse])
-def get_customers(db: Session = Depends(get_db)):
-    return CustomerService.get_customers(db)
+def get_customers(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+    return CustomerService.get_customers(db, skip, limit)
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
@@ -48,3 +52,8 @@ def delete_customer(customer_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Customer not found")
 
     return {"message": "Customer deleted successfully"}
+
+
+@router.get("/search")
+def search_customer(company_name: str, db: Session = Depends(get_db)):
+    return CustomerRepository.search(db, company_name)
