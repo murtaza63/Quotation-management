@@ -11,10 +11,7 @@ router = APIRouter(prefix="/customers", tags=["Customers"])
 
 @router.post("", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    try:
-        return CustomerService.create_customer(db, customer)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return CustomerService.create_customer(db, customer)
 
 
 @router.get("", response_model=list[CustomerResponse])

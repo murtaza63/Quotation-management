@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.repositories.customer_repository import CustomerRepository
 from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.core.exceptions import CompanyNameAlreadyExistsException
 
 
 class CustomerService:
@@ -12,7 +13,7 @@ class CustomerService:
         existing = CustomerRepository.get_by_company(db, customer.company_name)
 
         if existing:
-            raise ValueError("Company already exists")
+            raise CompanyNameAlreadyExistsException(customer.company_name)
 
         return CustomerRepository.create(db, customer)
 
