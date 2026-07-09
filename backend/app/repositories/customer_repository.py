@@ -1,5 +1,3 @@
-import email
-
 from sqlalchemy.orm import Session
 from app.models.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate
@@ -30,7 +28,7 @@ class CustomerRepository:
         if not db_customer:
             return None
 
-        for key, value in customer.model_dump().items():
+        for key, value in customer.model_dump(exclude_unset=True).items():
             setattr(db_customer, key, value)
 
         db.commit()
@@ -50,7 +48,11 @@ class CustomerRepository:
 
     @staticmethod
     def search(db: Session, company_name: str):
-        return db.query(Customer).filter(Customer.name.ilike(f"%{company_name}%")).all()
+        return (
+            db.query(Customer)
+            .filter(Customer.company_name.ilike(f"%{company_name}%"))
+            .all()
+        )
 
     @staticmethod
     def get_by_company(db: Session, company_name: str):

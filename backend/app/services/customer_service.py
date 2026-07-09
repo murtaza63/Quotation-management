@@ -17,11 +17,7 @@ class CustomerService:
         return CustomerRepository.create(db, customer)
 
     @staticmethod
-    def get_customers(db: Session):
-        return CustomerRepository.get_all(db)
-
-    @staticmethod
-    def get_customers(db, skip, limit):
+    def get_customers(db, skip: int = 0, limit: int = 20):
         return CustomerRepository.get_all(db, skip, limit)
 
     @staticmethod
@@ -31,3 +27,7 @@ class CustomerService:
     @staticmethod
     def delete_customer(db: Session, customer_id: int):
         return CustomerRepository.delete(db, customer_id)
+
+    @staticmethod
+    def get_customer(db: Session, customer_id: int):
+        return CustomerRepository.get_by_id(db, customer_id)
