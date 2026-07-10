@@ -4,18 +4,25 @@ from app.repositories.customer_repository import CustomerRepository
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.core.exceptions import CompanyNameAlreadyExistsException
 
+from app.core.logger import logger
+
 
 class CustomerService:
 
     @staticmethod
     def create_customer(db: Session, customer: CustomerCreate):
+        logger.info("Creating Customer: %s", customer.company_name)
 
         existing = CustomerRepository.get_by_company(db, customer.company_name)
 
         if existing:
+            logger.warning("Customer already exists: %s", customer.company_name)
             raise CompanyNameAlreadyExistsException(customer.company_name)
+        created_customer = CustomerRepository.create(db, customer)
 
-        return CustomerRepository.create(db, customer)
+        logger.info("Customer created successfully. ID=%s", created_customer.id)
+
+        return created_customer
 
     @staticmethod
     def get_customers(db, skip: int = 0, limit: int = 20):
