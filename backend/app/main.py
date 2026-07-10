@@ -3,8 +3,12 @@ from fastapi.responses import JSONResponse
 from app.core.middleware import log_requests
 from app.api.v1.api import api_router
 from app.core.exceptions import CompanyNameAlreadyExistsException
+from app.core.config import settings
 
-app = FastAPI(title="Quotation Management API", version="1.0.0")
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+)
 app.middleware("http")(log_requests)
 
 app.include_router(api_router)
