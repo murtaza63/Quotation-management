@@ -4,7 +4,7 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
 from app.core.exceptions import EmailAlreadyExistsException
 from app.core.hashing import hash_password, verify_password
-from app.core.jwt import create_access_token, decode_access_token
+from app.core.jwt import create_access_token
 from app.core.exceptions import InvalidCredentialsException
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
@@ -11,6 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     full_name = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
 
     email = Column(String, unique=True, index=True, nullable=False)
 
@@ -18,4 +19,4 @@ class User(Base):
 
     is_active = Column(Boolean, default=True)
 
-    created_at = Column(DateTime, default=datetime.utc)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
