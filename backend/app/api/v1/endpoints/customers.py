@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.core.security import get_current_user
 from app.db.database import get_db
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
 from app.services.customer_service import CustomerService
@@ -14,9 +14,11 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     return CustomerService.create_customer(db, customer)
 
 
-@router.get("", response_model=list[CustomerResponse])
-def get_customers(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
-    return CustomerService.get_customers(db, skip, limit)
+@router.get("/")
+def get_customers(
+    db: Session = Depends(get_db), current_user=Depends(get_current_user)
+):
+    return CustomerService.get_customers(db)
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
