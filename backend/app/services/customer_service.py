@@ -39,3 +39,7 @@ class CustomerService:
     @staticmethod
     def get_customer(db: Session, customer_id: int):
         return CustomerRepository.get_by_id(db, customer_id)
+
+    @staticmethod
+    def search_customer(db: Session, company_name: str):
+        return CustomerRepository.search_by_company(db, company_name)
