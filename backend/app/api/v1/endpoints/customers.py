@@ -10,10 +10,7 @@ from app.schemas.customer import (
 )
 from app.services.customer_service import CustomerService
 
-router = APIRouter(
-    prefix="/customers",
-    tags=["Customers"],
-)
+router = APIRouter()
 
 
 @router.post(
