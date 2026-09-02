@@ -95,7 +95,7 @@ class QuotationService:
         if not updated_quotation:
             return None
         # Recalculate subtotal, vat_amount, and total_amount based on the updated items
-        QuotationItemService.recalculate_totals(db, updated_quotation.id)
+        QuotationItemService.recalculate_quotation_totals(db, updated_quotation.id)
 
         return QuotationRepository.get_by_id(
             db,
