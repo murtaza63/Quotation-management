@@ -17,3 +17,20 @@ built for demolition and construction companies.
 ## Setup
 
 ### Backend
+
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+
+
+### Frontend
+
+cd frontend
+npm install
+npm start
+
+
+## About
+Built to manage quotation workflows for 
+Pure Golden Wrecking & Demolition Works LLC 
+— a leading demolition contractor in Dubai, UAE.
