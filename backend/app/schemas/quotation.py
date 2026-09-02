@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from decimal import Decimal
-
-from pydantic import BaseModel
+from app.schemas.customer import CustomerResponse
+from app.schemas.quotation_item import QuotationItemResponse
+from pydantic import BaseModel, Field
 
 
 class QuotationBase(BaseModel):
@@ -9,7 +10,9 @@ class QuotationBase(BaseModel):
     quotation_date: date
     valid_until: date
     status: str = "draft"
-    vat_percentage: Decimal = Decimal("5.00")
+    vat_percentage: Decimal = Field(
+        default=Decimal("0.00"), max_digits=5, decimal_places=2
+    )
     notes: str | None = None
 
 
@@ -29,10 +32,19 @@ class QuotationUpdate(BaseModel):
 class QuotationResponse(QuotationBase):
     id: int
     quotation_number: str
-    subtotal: Decimal
-    vat_amount: Decimal
-    total_amount: Decimal
+    subtotal: Decimal = Field(default=Decimal("0.00"), max_digits=12, decimal_places=2)
+    vat_amount: Decimal = Field(
+        default=Decimal("0.00"), max_digits=12, decimal_places=2
+    )
+    total_amount: Decimal = Field(
+        default=Decimal("0.00"), max_digits=12, decimal_places=2
+    )
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class QuotationDetailResponse(QuotationResponse):
+    customer: CustomerResponse
+    items: list[QuotationItemResponse]

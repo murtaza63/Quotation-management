@@ -4,7 +4,7 @@ from app.models.qoutation import Quotation
 from app.repositories.quotation_repository import QuotationRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.schemas.quotation import QuotationCreate, QuotationUpdate
-
+from app.services.quotaton_item_service import QuotationItemService
 from app.core.logger import logger
 
 
@@ -87,10 +87,19 @@ class QuotationService:
         quotation_id: int,
         quotation: QuotationUpdate,
     ):
-        return QuotationRepository.update(
+        updated_quotation = QuotationRepository.update(
             db,
             quotation_id,
             quotation,
+        )
+        if not updated_quotation:
+            return None
+        # Recalculate subtotal, vat_amount, and total_amount based on the updated items
+        QuotationItemService.recalculate_totals(db, updated_quotation.id)
+
+        return QuotationRepository.get_by_id(
+            db,
+            quotation_id,
         )
 
     @staticmethod
@@ -99,6 +108,16 @@ class QuotationService:
         quotation_id: int,
     ):
         return QuotationRepository.delete(
+            db,
+            quotation_id,
+        )
+
+    @staticmethod
+    def get_quotation_detail(
+        db: Session,
+        quotation_id: int,
+    ):
+        return QuotationRepository.get_detail(
             db,
             quotation_id,
         )

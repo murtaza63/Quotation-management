@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.qoutation import Quotation
 from app.schemas.quotation import QuotationUpdate
@@ -88,3 +88,18 @@ class QuotationRepository:
         db.commit()
 
         return True
+
+    @staticmethod
+    def get_detail(
+        db: Session,
+        quotation_id: int,
+    ):
+        return (
+            db.query(Quotation)
+            .options(
+                joinedload(Quotation.customer),
+                joinedload(Quotation.items),
+            )
+            .filter(Quotation.id == quotation_id)
+            .first()
+        )

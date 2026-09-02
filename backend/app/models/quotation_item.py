@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -22,7 +22,7 @@ class QuotationItem(Base):
 
     quotation_id = Column(
         Integer,
-        ForeignKey("quotations.id"),
+        ForeignKey("quotations.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -50,4 +50,8 @@ class QuotationItem(Base):
         Numeric(14, 2),
         nullable=False,
         default=Decimal("0.00"),
+    )
+    quotation = relationship(
+        "Quotation",
+        back_populates="items",
     )

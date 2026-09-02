@@ -7,6 +7,7 @@ from app.schemas.quotation import (
     QuotationCreate,
     QuotationUpdate,
     QuotationResponse,
+    QuotationDetailResponse,
 )
 from app.services.quotation_service import QuotationService
 
@@ -37,6 +38,29 @@ def get_quotations(
     current_user=Depends(get_current_user),
 ):
     return QuotationService.get_quotations(db)
+
+
+@router.get(
+    "/{quotation_id}/details",
+    response_model=QuotationDetailResponse,
+)
+def get_quotation_detail(
+    quotation_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    quotation = QuotationService.get_quotation_detail(
+        db,
+        quotation_id,
+    )
+
+    if not quotation:
+        raise HTTPException(
+            status_code=404,
+            detail="Quotation not found",
+        )
+
+    return quotation
 
 
 @router.get(

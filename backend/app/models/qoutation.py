@@ -22,3 +22,8 @@ class Quotation(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     customer = relationship("Customer", back_populates="quotations")
+
+    items = relationship(
+        "QuotationItem",
+        back_populates="quotation",
+    )
