@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from fastapi import HTTPException
 from app.models.qoutation import Quotation
 from app.repositories.quotation_repository import QuotationRepository
 from app.repositories.customer_repository import CustomerRepository
@@ -26,7 +26,10 @@ class QuotationService:
         )
 
         if not customer:
-            raise ValueError("Customer not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Customer not found",
+            )
 
         quotation_number = QuotationService.generate_quotation_number(db)
 
@@ -55,9 +58,18 @@ class QuotationService:
 
     @staticmethod
     def generate_quotation_number(db: Session):
-        count = db.query(Quotation).count()
+        quotations = (
+            db.query(Quotation.quotation_number)
+            .filter(Quotation.quotation_number.like("QT-2026-%"))
+            .all()
+        )
 
-        return f"QT-2026-{count + 1:04d}"
+        if not quotations:
+            next_number = 1
+        last_number = int(quotations[-1].quotation_number.split("-")[-1])
+        next_number = last_number + 1
+
+        return f"QT-2026-{next_number:04d}"
 
     @staticmethod
     def get_quotations(
@@ -87,27 +99,44 @@ class QuotationService:
         quotation_id: int,
         quotation: QuotationUpdate,
     ):
+        # Check quotation exists
+        existing_quotation = QuotationRepository.get_by_id(
+            db,
+            quotation_id,
+        )
+
+        if not existing_quotation:
+            return None
+
+        # If customer_id is being changed, check customer exists
+        if quotation.customer_id is not None:
+            customer = CustomerRepository.get_by_id(
+                db,
+                quotation.customer_id,
+            )
+
+            if not customer:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Customer not found",
+                )
+
         updated_quotation = QuotationRepository.update(
             db,
             quotation_id,
             quotation,
         )
+
         if not updated_quotation:
             return None
-        # Recalculate subtotal, vat_amount, and total_amount based on the updated items
-        QuotationItemService.recalculate_quotation_totals(db, updated_quotation.id)
 
-        return QuotationRepository.get_by_id(
+        # Recalculate subtotal, VAT amount, and total amount
+        QuotationItemService.recalculate_quotation_totals(
             db,
-            quotation_id,
+            updated_quotation.id,
         )
 
-    @staticmethod
-    def delete_quotation(
-        db: Session,
-        quotation_id: int,
-    ):
-        return QuotationRepository.delete(
+        return QuotationRepository.get_by_id(
             db,
             quotation_id,
         )
