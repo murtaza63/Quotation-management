@@ -24,8 +24,24 @@ class QuotationRepository:
         db: Session,
         skip: int = 0,
         limit: int = 20,
+        customer_id: int | None = None,
+        status: str | None = None,
+        quotation_number: str | None = None,
     ):
-        return db.query(Quotation).offset(skip).limit(limit).all()
+        query = db.query(Quotation)
+        if customer_id is not None:
+            query = query.filter(Quotation.customer_id == customer_id)
+        if status is not None:
+            query = query.filter(Quotation.status == status)
+        if quotation_number is not None:
+            query = query.filter(
+                Quotation.quotation_number.ilike(f"%{quotation_number}%")
+            )
+        total = query.count()
+
+        items = query.order_by(Quotation.id.desc()).offset(skip).limit(limit).all()
+
+        return items, total
 
     @staticmethod
     def get_by_id(

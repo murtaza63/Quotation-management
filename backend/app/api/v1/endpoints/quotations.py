@@ -8,6 +8,7 @@ from app.schemas.quotation import (
     QuotationUpdate,
     QuotationResponse,
     QuotationDetailResponse,
+    QuotationListResponse,
 )
 from app.services.quotation_service import QuotationService
 
@@ -31,13 +32,25 @@ def create_quotation(
 
 @router.get(
     "/",
-    response_model=list[QuotationResponse],
+    response_model=QuotationListResponse,
 )
 def get_quotations(
+    skip: int = 0,
+    limit: int = 20,
+    customer_id: int | None = None,
+    status: str | None = None,
+    quotation_number: str | None = None,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return QuotationService.get_quotations(db)
+    return QuotationService.get_quotations(
+        db=db,
+        skip=skip,
+        limit=limit,
+        customer_id=customer_id,
+        status=status,
+        quotation_number=quotation_number,
+    )
 
 
 @router.get(

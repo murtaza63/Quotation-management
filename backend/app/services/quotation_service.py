@@ -66,8 +66,9 @@ class QuotationService:
 
         if not quotations:
             next_number = 1
-        last_number = int(quotations[-1].quotation_number.split("-")[-1])
-        next_number = last_number + 1
+        else:
+            numbers = [int(q.quotation_number.split("-")[-1]) for q in quotations]
+            next_number = max(numbers) + 1
 
         return f"QT-2026-{next_number:04d}"
 
@@ -76,12 +77,25 @@ class QuotationService:
         db: Session,
         skip: int = 0,
         limit: int = 20,
+        customer_id: int | None = None,
+        status: str | None = None,
+        quotation_number: str | None = None,
     ):
-        return QuotationRepository.get_all(
-            db,
-            skip,
-            limit,
+        item, total = QuotationRepository.get_all(
+            db=db,
+            skip=skip,
+            limit=limit,
+            customer_id=customer_id,
+            status=status,
+            quotation_number=quotation_number,
         )
+
+        return {
+            "items": item,
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+        }
 
     @staticmethod
     def get_quotation(
@@ -108,6 +122,36 @@ class QuotationService:
         if not existing_quotation:
             return None
 
+        # validate dates using existing database values
+        if quotation.quotation_date is not None or quotation.valid_until is not None:
+            new_quotation_date = (
+                quotation.quotation_date
+                if quotation.quotation_date is not None
+                else existing_quotation.quotation_date
+            )
+            new_valid_until = (
+                quotation.valid_until
+                if quotation.valid_until is not None
+                else existing_quotation.valid_until
+            )
+            if new_valid_until < new_quotation_date:
+                raise HTTPException(
+                    status_code=422,
+                    detail="valid_until cannot be earlier than quotation_date",
+                )
+            # Validate quotation status transition
+            if quotation.status is not None:
+                current_status = existing_quotation.status
+                new_status = quotation.status
+
+                allowed_transitions = {
+                    "DRAFT": ["SENT", "CANCELLED"],
+                    "SENT": ["ACCEPTED", "CANCELLED"],
+                    "APPROVED": ["ACCEPTED", "REJECTED", "CANCELLED"],
+                    "ACCEPTED": ["CANCELLED"],
+                    "REJECTED": [],
+                    "CANCELLED": [],
+                }
         # If customer_id is being changed, check customer exists
         if quotation.customer_id is not None:
             customer = CustomerRepository.get_by_id(
@@ -140,6 +184,24 @@ class QuotationService:
             db,
             quotation_id,
         )
+
+    @staticmethod
+    def delete_quotation(
+        db: Session,
+        quotation_id: int,
+    ):
+        existing_quotation = QuotationRepository.get_by_id(
+            db,
+            quotation_id,
+        )
+        if not existing_quotation:
+            return None
+
+        deleted_quotation = QuotationRepository.delete(
+            db,
+            quotation_id,
+        )
+        return deleted_quotation
 
     @staticmethod
     def get_quotation_detail(

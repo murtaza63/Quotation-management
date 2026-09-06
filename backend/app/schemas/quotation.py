@@ -3,7 +3,7 @@ from decimal import Decimal
 from app.schemas.customer import CustomerResponse
 from app.schemas.quotation_item import QuotationItemResponse
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class QuotationStatus(str, Enum):
@@ -21,13 +21,26 @@ class QuotationBase(BaseModel):
     valid_until: date
     status: QuotationStatus = QuotationStatus.DRAFT
     vat_percentage: Decimal = Field(
-        default=Decimal("0.00"), max_digits=5, decimal_places=2
+        default=Decimal("0.00"),
+        ge=Decimal("0.00"),
+        le=Decimal("100.00"),
+        max_digits=5,
+        decimal_places=2,
     )
     notes: str | None = None
 
 
 class QuotationCreate(QuotationBase):
-    pass
+    @model_validator(mode="before")
+    @classmethod
+    def validate_dates(cls, values):
+        if (
+            "quotation_date" in values
+            and "valid_until" in values
+            and values["valid_until"] < values["quotation_date"]
+        ):
+            raise ValueError("valid_until cannot be earlier than quotation_date")
+        return values
 
 
 class QuotationUpdate(BaseModel):
@@ -35,8 +48,30 @@ class QuotationUpdate(BaseModel):
     quotation_date: date | None = None
     valid_until: date | None = None
     status: QuotationStatus | None = None
-    vat_percentage: Decimal | None = None
-    notes: str | None = None
+    vat_percentage: Decimal | None = Field(
+        default=None,
+        ge=Decimal("0.00"),
+        le=Decimal("100.00"),
+        max_digits=5,
+        decimal_places=2,
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_dates(cls, values):
+        if not isinstance(values, dict):
+            return values
+        quotation_date = values.get("quotation_date")
+        valid_until = values.get("valid_until")
+
+        if (
+            quotation_date is not None
+            and valid_until is not None
+            and valid_until < quotation_date
+        ):
+            raise ValueError("valid_until cannot be earlier than quotation_date")
+
+        return values
 
 
 class QuotationResponse(QuotationBase):
@@ -58,3 +93,10 @@ class QuotationResponse(QuotationBase):
 class QuotationDetailResponse(QuotationResponse):
     customer: CustomerResponse
     items: list[QuotationItemResponse]
+
+
+class QuotationListResponse(BaseModel):
+    items: list[QuotationResponse]
+    total: int
+    skip: int
+    limit: int
