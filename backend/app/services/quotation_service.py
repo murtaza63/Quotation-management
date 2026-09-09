@@ -122,36 +122,47 @@ class QuotationService:
         if not existing_quotation:
             return None
 
-        # validate dates using existing database values
+        # Validate dates using existing database values
         if quotation.quotation_date is not None or quotation.valid_until is not None:
             new_quotation_date = (
                 quotation.quotation_date
                 if quotation.quotation_date is not None
                 else existing_quotation.quotation_date
             )
+
             new_valid_until = (
                 quotation.valid_until
                 if quotation.valid_until is not None
                 else existing_quotation.valid_until
             )
+
             if new_valid_until < new_quotation_date:
                 raise HTTPException(
                     status_code=422,
                     detail="valid_until cannot be earlier than quotation_date",
                 )
-            # Validate quotation status transition
-            if quotation.status is not None:
-                current_status = existing_quotation.status
-                new_status = quotation.status
 
-                allowed_transitions = {
-                    "DRAFT": ["SENT", "CANCELLED"],
-                    "SENT": ["ACCEPTED", "CANCELLED"],
-                    "APPROVED": ["ACCEPTED", "REJECTED", "CANCELLED"],
-                    "ACCEPTED": ["CANCELLED"],
-                    "REJECTED": [],
-                    "CANCELLED": [],
-                }
+        # Validate quotation status transition
+        if quotation.status is not None:
+            current_status = existing_quotation.status
+            new_status = quotation.status.value
+
+            allowed_transitions = {
+                "draft": ["sent", "cancelled"],
+                "sent": ["approved", "cancelled"],
+                "approved": ["accepted", "rejected", "cancelled"],
+                "accepted": ["cancelled"],
+                "rejected": [],
+                "cancelled": [],
+            }
+
+            if new_status != current_status:
+                if new_status not in allowed_transitions[current_status]:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"Invalid status transition: {current_status} → {new_status}",
+                    )
+
         # If customer_id is being changed, check customer exists
         if quotation.customer_id is not None:
             customer = CustomerRepository.get_by_id(

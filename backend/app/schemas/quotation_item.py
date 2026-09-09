@@ -1,13 +1,21 @@
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class QuotationItemBase(BaseModel):
     description: str
-    quantity: Decimal
+    quantity: Decimal = Field(
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+    )
     unit: str
-    unit_price: Decimal
+    unit_price: Decimal = Field(
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+    )
 
 
 class QuotationItemCreate(QuotationItemBase):
@@ -16,9 +24,19 @@ class QuotationItemCreate(QuotationItemBase):
 
 class QuotationItemUpdate(BaseModel):
     description: str | None = None
-    quantity: Decimal | None = None
+    quantity: Decimal | None = Field(
+        default=None,
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+    )
     unit: str | None = None
-    unit_price: Decimal | None = None
+    unit_price: Decimal | None = Field(
+        default=None,
+        gt=Decimal("0"),
+        max_digits=12,
+        decimal_places=2,
+    )
 
 
 class QuotationItemResponse(QuotationItemBase):
