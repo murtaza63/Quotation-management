@@ -31,7 +31,7 @@ def create_quotation(
 
 
 @router.get(
-    "/",
+    "",
     response_model=QuotationListResponse,
 )
 def get_quotations(

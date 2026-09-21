@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.middleware import log_requests
 from app.api.v1.api import api_router
@@ -8,6 +9,13 @@ from app.core.exceptions import (
 )
 
 app = FastAPI(title="Quotation Management API", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.middleware("http")(log_requests)
 
 app.include_router(api_router)

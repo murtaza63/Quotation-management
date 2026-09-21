@@ -25,7 +25,7 @@ def create_customer(
     return CustomerService.create_customer(db, customer)
 
 
-@router.get("/")
+@router.get("")
 def get_customers(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
