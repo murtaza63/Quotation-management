@@ -3,8 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import {
     getQuotationDetails,
     createQuotationItem,
+    deleteQuotationItem,
+    updateQuotationItem
 } from "../api/quotation";
-import { updateQuotationItem } from "../api/quotation";
 
 function QuotationDetails() {
     const { id } = useParams();
@@ -24,6 +25,7 @@ function QuotationDetails() {
     const [editUnit, setEditUnit] = useState("");
     const [editUnitPrice, setEditUnitPrice] = useState("");
     const [updatingItem, setUpdatingItem] = useState(false);
+    const [deletingItemId, setDeletingItemId] = useState(null);
 
     useEffect(() => {
         const loadQuotation = async () => {
@@ -128,6 +130,31 @@ function QuotationDetails() {
         }
     };
 
+    const handleDeleteItem = async (itemId) => {
+        const confirmed = window.confirm("Are you sure you want to delete this item?"
+        );
+        if (!confirmed) {
+            return;
+        }
+        setError("");
+        setDeletingItemId(itemId);
+
+        try {
+            await deleteQuotationItem(itemId);
+            const updatedQuotation = await getQuotationDetails(Number(id));
+            setQuotation(updatedQuotation);
+        } catch (error) {
+            console.error(error);
+            if (error.response?.data?.detail) {
+                setError(error.response.data.detail);
+            } else {
+                setError("Failed to delete quotation item.");
+            }
+        } finally {
+            setDeletingItemId(null);
+        }
+    };
+
     return (
         <div>
             <h1>Quotation Details</h1>
@@ -204,11 +231,17 @@ function QuotationDetails() {
                                 <td>{item.total}</td>
                                 <td>
                                     <button
-                                        onClick={() =>
-                                            handleEditItem(item)
-                                        }
+                                        onClick={() => handleEditItem(item)}
+                                        disabled={deletingItemId === item.id}
                                     >
                                         Edit
+                                    </button>{" "}
+
+                                    <button
+                                        onClick={() => handleDeleteItem(item.id)}
+                                        disabled={deletingItemId === item.id}
+                                    >
+                                        {deletingItemId === item.id ? "Deleting..." : "Delete"}
                                     </button>
                                 </td>
                             </tr>

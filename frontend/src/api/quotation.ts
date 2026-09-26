@@ -116,3 +116,7 @@ export const updateQuotationItem = async (
 
     return response.data;
 };
+
+export const deleteQuotationItem = async (itemId: number): Promise<void> => {
+    await api.delete(`/quotation-items/${itemId}`);
+}
