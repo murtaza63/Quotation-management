@@ -46,6 +46,26 @@ export const createQuotation = async (
     return response.data;
 };
 
+export interface QuotationUpdate {
+    customer_id?: number;
+    quotation_date?: string;
+    valid_until?: string;
+    status?: string;
+    vat_percentage?: string;
+}
+
+export const updateQuotation = async (
+    quotationId: number,
+    quotation: QuotationUpdate
+): Promise<Quotation> => {
+    const response = await api.put<Quotation>(
+        `/quotations/${quotationId}`,
+        quotation
+    );
+
+    return response.data;
+};
+
 export interface CustomerDetails {
     id: number;
     company_name: string;

@@ -177,6 +177,11 @@ function QuotationDetails() {
                 <strong>Valid Until:</strong>{" "}
                 {quotation.valid_until}
             </p>
+            <br />
+
+            <Link to={`/quotations/${quotation.id}/edit`}>
+                Edit Quotation
+            </Link>
 
             <hr />
 

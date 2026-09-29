@@ -11,6 +11,7 @@ import EditCustomer from "./pages/EditCustomer";
 import Quotations from "./pages/Quotation";
 import QuotationNew from "./pages/QuotationNew";
 import QuotationDetails from "./pages/QuotationDetails";
+import QuotationEdit from "./pages/QuotationEdit";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/quotations" element={<Quotations />} />
             <Route path="/quotations/new" element={<QuotationNew />} />
             <Route path="/quotations/:id" element={<QuotationDetails />} />
+            <Route path="/quotations/:id/edit" element={<QuotationEdit />} />
           </Route>
         </Routes>
       </BrowserRouter>
