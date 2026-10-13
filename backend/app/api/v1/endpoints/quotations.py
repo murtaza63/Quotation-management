@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from fastapi.responses import StreamingResponse
+from app.services.quotation_pdf_service import QuotationPDFService
 from app.core.security import get_current_user
 from app.db.database import get_db
 from app.schemas.quotation import (
@@ -50,6 +51,38 @@ def get_quotations(
         customer_id=customer_id,
         status=status,
         quotation_number=quotation_number,
+    )
+
+
+@router.get(
+    "/{quotation_id}/pdf",
+)
+def generate_quotation_pdf(
+    quotation_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    quotation = QuotationService.get_quotation_detail(
+        db,
+        quotation_id,
+    )
+
+    if not quotation:
+        raise HTTPException(
+            status_code=404,
+            detail="Quotation not found",
+        )
+
+    pdf_buffer = QuotationPDFService.generate_pdf(quotation)
+
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'inline; filename="quotation-{quotation.quotation_number}.pdf"'
+            )
+        },
     )
 
 

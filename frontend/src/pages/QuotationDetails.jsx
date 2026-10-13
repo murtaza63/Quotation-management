@@ -4,7 +4,8 @@ import {
     getQuotationDetails,
     createQuotationItem,
     deleteQuotationItem,
-    updateQuotationItem
+    updateQuotationItem,
+    downloadQuotationPDF,
 } from "../api/quotation";
 
 function QuotationDetails() {
@@ -26,6 +27,27 @@ function QuotationDetails() {
     const [editUnitPrice, setEditUnitPrice] = useState("");
     const [updatingItem, setUpdatingItem] = useState(false);
     const [deletingItemId, setDeletingItemId] = useState(null);
+
+    const handleDownloadPDF = async () => {
+        try {
+            const blob = await downloadQuotationPDF(Number(id));
+
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `quotation-${quotation.quotation_number}.pdf`;
+
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error);
+            alert("Failed to download quotation PDF.");
+        }
+    };
 
     useEffect(() => {
         const loadQuotation = async () => {
@@ -182,7 +204,10 @@ function QuotationDetails() {
             <Link to={`/quotations/${quotation.id}/edit`}>
                 Edit Quotation
             </Link>
-
+            <br />
+            <button onClick={handleDownloadPDF}>
+                Download PDF
+            </button>
             <hr />
 
             <h2>Customer</h2>

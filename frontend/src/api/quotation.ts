@@ -140,3 +140,16 @@ export const updateQuotationItem = async (
 export const deleteQuotationItem = async (itemId: number): Promise<void> => {
     await api.delete(`/quotation-items/${itemId}`);
 }
+
+export const downloadQuotationPDF = async (
+    quotationId: number
+): Promise<Blob> => {
+    const response = await api.get(
+        `/quotations/${quotationId}/pdf`,
+        {
+            responseType: "blob",
+        }
+    );
+
+    return response.data;
+};
