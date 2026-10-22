@@ -3,7 +3,7 @@ from decimal import Decimal
 from app.schemas.customer import CustomerResponse
 from app.schemas.quotation_item import QuotationItemResponse
 from enum import Enum
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 
 
 class QuotationStatus(str, Enum):
@@ -86,8 +86,7 @@ class QuotationResponse(QuotationBase):
     )
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuotationDetailResponse(QuotationResponse):

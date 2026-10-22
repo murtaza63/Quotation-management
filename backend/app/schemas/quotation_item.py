@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class QuotationItemBase(BaseModel):
@@ -44,5 +44,4 @@ class QuotationItemResponse(QuotationItemBase):
     quotation_id: int
     total: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
